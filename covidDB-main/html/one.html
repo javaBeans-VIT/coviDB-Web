@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+    <script src="../node_modules/socket.io/client-dist/socket.io.js"></script>
+    <script type="text/javascript">
+      class testChatApp {
+        constructor(email, chatAppId) {
+          this.chatAppId = chatAppId;
+          this.email = email;
+          this.socket = io.connect("http://localhost:5000", {
+            withCredentials: true,
+          });
+          if (this.email) {
+            let self = this;
+            this.socket.on("connect", function () {
+              console.log("established connection");
+              self.socket.emit("join_room", {
+                userEmail: self.email,
+                chatroom: "codeial" + Math.random() * 10,
+              });
+              self.socket.emit("send_message", {
+                ans: "Yes",
+              });
+              self.socket.on("user_joined", function (data) {
+                console.log(data, "user joined");
+              });
+            });
+          }
+        }
+      }
+
+      // new testChatApp("mad@123", "123");
+    </script>
+  </body>
+</html>
