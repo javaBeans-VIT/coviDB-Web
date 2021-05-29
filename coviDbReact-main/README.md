@@ -1,8 +1,5 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-<h1>App deployement Link http://projcovi.com/Dashboard</h1>
-<h1>Node server Link https://github.com/maverick0701/covidDB/</h1>
-
 ## Available Scripts
 
 In the project directory, you can run:
