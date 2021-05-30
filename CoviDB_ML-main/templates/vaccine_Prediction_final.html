@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html >
+<!--From https://codepen.io/frytyler/pen/EGdtg-->
+<head>
+  <meta charset="UTF-8">
+  <title>CoviDB</title>
+  <link rel="icon"  type="image/png" href="https://www.cmu.edu/coronavirus/assets/images/icon-line-syringe.png" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+</head>
+<body>
+  <style type="text/css">
+    html{
+      height: 100%
+    }
+    body{
+      background-color: #161625;
+      color: rgb(253, 24, 70);
+      font-family: 'Poppins', sans-serif;
+      height: 100%
+      font-family: "Raleway", sans-serif
+    }
+    h1{
+      padding-top: 20px;
+      text-align: center;
+      font-size: 35px;
+      font-family: "Raleway", sans-serif;
+      color: white;
+    }
+    input {
+      margin-top: 20px;
+      width: 200px;
+      height: 30px;
+      padding: 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: none !important;
+      box-shadow: 2px 2px 40px rgba(0, 0, 0, 0.2) inset;
+      caret-color: #057bfe;
+      color: #057bfe;
+      font-size: 20px;
+    }
+    #country{
+      width: 200px;
+      height: 50px;
+      padding: 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: none !important;
+      box-shadow: 2px 2px 40px rgba(0, 0, 0, 0.2) inset;
+      caret-color: #057bfe;
+      color: #057bfe;
+      font-size: 20px;
+    }
+    input:focus {
+      outline: none !important;
+    }
+    ::placeholder {
+      color: #fff;
+    }
+    button{
+      margin-top: 20px;
+      background: none;
+      border: none;
+      font-size: 25px;
+      border: 2px solid whitesmoke;
+      color: rgb(253, 24, 70);
+      padding: 7px 7px;
+      border-radius: 10px;
+      transition: 0.5s all ease-in-out;
+    }
+    button:focus {
+      outline: none !important;
+    }
+    button:hover {
+      border: 2px solid rgb(253, 24, 70);
+      color: whitesmoke;
+    }
+    span {
+      font-size: 20px;
+    }
+    .hide {
+      display: none;
+    }
+    .bgimg {
+  background-image: url('https://image.freepik.com/free-vector/abstract-banner-background-with-red-shapes_1361-3348.jpg');
+  min-height: 200px;
+  background-position: center;
+  background-size: cover;
+}
+.container {
+  height: 50vh;
+}
+
+.chart-wrapper {
+  width: 500px;
+  height: 500px;
+}
+  </style>
+  <div class="bgimg w3-display-container w3-animate-opacity w3-text-white">
+  <div class="w3-display-middle">
+    <h1 class="w3-jumbo w3-animate-top"><h1>Predict COVID 19 Vaccinations<br>INDIA || FRANCE || AUSTRALIA</h1></h1>
+  </div>
+</div>
+ <div class="login" align="center">
+     <!-- Main Input For Receiving Query to our ML -->
+    <form action="/predict" method="post" id="form1" name="myform">
+      <label for="country">Choose a Country:</label>
+        <select name="country" id="country" required>
+          <option value="India">India</option>
+          <option value="France">France</option>
+          <option value="Australia">Australia</option>
+        </select>
+    	<label for="prediction_date">Date:</label>
+        <input type="date" id="prediction_date" name="prediction_date" required><br>
+        <button type="submit" class="btn btn-primary btn-large" id="btnsend">Predict</button>
+    </form>
+   <br>
+   <br>
+   <div id="result">
+   <span id="out">The Number of Vaccines Doses jabbed till {{ prediction_date }} in {{ form_country }} will be </span><b>{{ prediction_text }} </b> which is approximatley <span>
+   {{ prediction_percent }}</span>% of {{ form_country }}'s Population.</div>
+   <br>
+ </div>
+  <div class="wrapper">
+    <div class="container d-flex flex-column justify-content-center align-items-center">
+      <div class="title text-center mb-5">
+        <h1>Number of Vaccines used by Different Countries</h1>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="myChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="./js/script.js"></script>
+ <div><h1>List Of all Vaccines being applied in countries</h1></div>
+ <div class="table">
+   <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: center;">
+      <th></th>
+      <th>Country</th>
+      <th>ISO CODE</th>
+      <th>Vaccines</th>
+      <th>Source Name Verified from</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Afghanistan</td>
+      <td>AFG</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Afghanistan</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Albania</td>
+      <td>ALB</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Algeria</td>
+      <td>DZA</td>
+      <td>Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Andorra</td>
+      <td>AND</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Andorra</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Angola</td>
+      <td>AGO</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Anguilla</td>
+      <td>AIA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Antigua and Barbuda</td>
+      <td>ATG</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Argentina</td>
+      <td>ARG</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Aruba</td>
+      <td>ABW</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Government of Aruba</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Australia</td>
+      <td>AUS</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Australia via covidlive.com.au</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Austria</td>
+      <td>AUT</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Azerbaijan</td>
+      <td>AZE</td>
+      <td>Oxford/AstraZeneca, Sinovac</td>
+      <td>Government of Azerbaijan</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Bahamas</td>
+      <td>BHS</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of the Bahamas</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Bahrain</td>
+      <td>BHR</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Bangladesh</td>
+      <td>BGD</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Directorate General of Health Services</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Barbados</td>
+      <td>BRB</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>Belarus</td>
+      <td>BLR</td>
+      <td>Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>Belgium</td>
+      <td>BEL</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Sciensano</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>Belize</td>
+      <td>BLZ</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>Bermuda</td>
+      <td>BMU</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Government of Bermuda</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>Bhutan</td>
+      <td>BTN</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>Bolivia</td>
+      <td>BOL</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>Bosnia and Herzegovina</td>
+      <td>BIH</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac, Sputnik V</td>
+      <td>Public Health Institute</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>Botswana</td>
+      <td>BWA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health and Wellness</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Brazil</td>
+      <td>BRA</td>
+      <td>Oxford/AstraZeneca, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Brunei</td>
+      <td>BRN</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>Bulgaria</td>
+      <td>BGR</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>Cambodia</td>
+      <td>KHM</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>Cameroon</td>
+      <td>CMR</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Medical Council</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>Canada</td>
+      <td>CAN</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Official data from provinces via covid19tracker.ca</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>Cape Verde</td>
+      <td>CPV</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Cape Verde</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>Cayman Islands</td>
+      <td>CYM</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Cayman Islands Government</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>Chile</td>
+      <td>CHL</td>
+      <td>Pfizer/BioNTech, Sinovac</td>
+      <td>Department of Statistics and Health Information</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>China</td>
+      <td>CHN</td>
+      <td>Sinopharm/Beijing, Sinopharm/Wuhan, Sinovac</td>
+      <td>National Health Commission</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>Colombia</td>
+      <td>COL</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>Costa Rica</td>
+      <td>CRI</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Costa Rican Social Security Fund</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>Cote d'Ivoire</td>
+      <td>CIV</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health and Public Hygiene</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>Croatia</td>
+      <td>HRV</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>Curacao</td>
+      <td>CUW</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Government of Curacao</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>Cyprus</td>
+      <td>CYP</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Government of Cyprus</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>Czechia</td>
+      <td>CZE</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>Democratic Republic of Congo</td>
+      <td>COD</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>Denmark</td>
+      <td>DNK</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Statens Serum Institute</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>Dominica</td>
+      <td>DMA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Dominica</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>Dominican Republic</td>
+      <td>DOM</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing, Sinovac</td>
+      <td>Ministry of Public Health</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>Ecuador</td>
+      <td>ECU</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Government of Ecuador via Ecuacovid</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>Egypt</td>
+      <td>EGY</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>El Salvador</td>
+      <td>SLV</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>England</td>
+      <td>OWID_ENG</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of the United Kingdom</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>Equatorial Guinea</td>
+      <td>GNQ</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>Estonia</td>
+      <td>EST</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>National Health Board</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>Eswatini</td>
+      <td>SWZ</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Eswatini</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>Ethiopia</td>
+      <td>ETH</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>Faeroe Islands</td>
+      <td>FRO</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Government of the Faeroe Islands</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>Falkland Islands</td>
+      <td>FLK</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of the Falkland Islands</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>Fiji</td>
+      <td>FJI</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>Finland</td>
+      <td>FIN</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Finnish Institute for Health and Welfare</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>France</td>
+      <td>FRA</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Public Health France</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>Gabon</td>
+      <td>GAB</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>Gambia</td>
+      <td>GMB</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>Georgia</td>
+      <td>GEO</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Georgia</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>Germany</td>
+      <td>DEU</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Robert Koch Institut</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>Ghana</td>
+      <td>GHA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Ghana</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>Gibraltar</td>
+      <td>GIB</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Government of Gibraltar</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>Greece</td>
+      <td>GRC</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>Greenland</td>
+      <td>GRL</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Government of Greenland</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>Grenada</td>
+      <td>GRD</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Grenada</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>Guatemala</td>
+      <td>GTM</td>
+      <td>Moderna, Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>Guernsey</td>
+      <td>GGY</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Guernsey</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>Guinea</td>
+      <td>GIN</td>
+      <td>Sputnik V</td>
+      <td>National Health Security Agency</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>Guyana</td>
+      <td>GUY</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>Honduras</td>
+      <td>HND</td>
+      <td>Moderna, Oxford/AstraZeneca</td>
+      <td>Government of Honduras</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>Hong Kong</td>
+      <td>HKG</td>
+      <td>Pfizer/BioNTech, Sinovac</td>
+      <td>Government of Hong Kong</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>Hungary</td>
+      <td>HUN</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Hungary</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>Iceland</td>
+      <td>ISL</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Directorate of Health</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>India</td>
+      <td>IND</td>
+      <td>Covaxin, Oxford/Covishield</td>
+      <td>Government of India</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>Indonesia</td>
+      <td>IDN</td>
+      <td>Oxford/AstraZeneca, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>Iran</td>
+      <td>IRN</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Iran</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>Iraq</td>
+      <td>IRQ</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>Ireland</td>
+      <td>IRL</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Heath Service Executive</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>Isle of Man</td>
+      <td>IMN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Isle of Man Government</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>Israel</td>
+      <td>ISR</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Government of Israel</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>Italy</td>
+      <td>ITA</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Extraordinary commissioner for the Covid-19 emergency</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>Jamaica</td>
+      <td>JAM</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Jamaica</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>Japan</td>
+      <td>JPN</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Prime Minister's Office</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>Jersey</td>
+      <td>JEY</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Jersey</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>Jordan</td>
+      <td>JOR</td>
+      <td>Pfizer/BioNTech, Sinopharm/Beijing</td>
+      <td>Government of Jordan</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>Kazakhstan</td>
+      <td>KAZ</td>
+      <td>Sputnik V</td>
+      <td>Government of Kazakhstan</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>Kenya</td>
+      <td>KEN</td>
+      <td>Oxford/AstraZeneca, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>Kosovo</td>
+      <td>OWID_KOS</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>Kuwait</td>
+      <td>KWT</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>Kyrgyzstan</td>
+      <td>KGZ</td>
+      <td>Sinopharm/Beijing, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>Laos</td>
+      <td>LAO</td>
+      <td>Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Laos</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>Latvia</td>
+      <td>LVA</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>National Health Service</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>Lebanon</td>
+      <td>LBN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Lebanon</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>Lesotho</td>
+      <td>LSO</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Lesotho</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>Liechtenstein</td>
+      <td>LIE</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Federal Office of Public Health</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>Lithuania</td>
+      <td>LTU</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>Luxembourg</td>
+      <td>LUX</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Luxembourg</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>Macao</td>
+      <td>MAC</td>
+      <td>Pfizer/BioNTech, Sinopharm/Beijing</td>
+      <td>Government of Macao</td>
+    </tr>
+    <tr>
+      <th>100</th>
+      <td>Malawi</td>
+      <td>MWI</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>101</th>
+      <td>Malaysia</td>
+      <td>MYS</td>
+      <td>Pfizer/BioNTech, Sinovac</td>
+      <td>Government of Malaysia</td>
+    </tr>
+    <tr>
+      <th>102</th>
+      <td>Maldives</td>
+      <td>MDV</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing</td>
+      <td>Presidency of the Maldives</td>
+    </tr>
+    <tr>
+      <th>103</th>
+      <td>Mali</td>
+      <td>MLI</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>104</th>
+      <td>Malta</td>
+      <td>MLT</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>COVID-19 Malta Public Health Response Team</td>
+    </tr>
+    <tr>
+      <th>105</th>
+      <td>Mauritania</td>
+      <td>MRT</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>106</th>
+      <td>Mauritius</td>
+      <td>MUS</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>National Communication Committee on COVID-19</td>
+    </tr>
+    <tr>
+      <th>107</th>
+      <td>Mexico</td>
+      <td>MEX</td>
+      <td>CanSino, Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac, Sputnik V</td>
+      <td>Secretary of Health</td>
+    </tr>
+    <tr>
+      <th>108</th>
+      <td>Moldova</td>
+      <td>MDA</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>109</th>
+      <td>Monaco</td>
+      <td>MCO</td>
+      <td>Pfizer/BioNTech</td>
+      <td>National Council</td>
+    </tr>
+    <tr>
+      <th>110</th>
+      <td>Mongolia</td>
+      <td>MNG</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Ministry of Health via ikon.mn</td>
+    </tr>
+    <tr>
+      <th>111</th>
+      <td>Montenegro</td>
+      <td>MNE</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Montenegro</td>
+    </tr>
+    <tr>
+      <th>112</th>
+      <td>Montserrat</td>
+      <td>MSR</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Montserrat</td>
+    </tr>
+    <tr>
+      <th>113</th>
+      <td>Morocco</td>
+      <td>MAR</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>114</th>
+      <td>Mozambique</td>
+      <td>MOZ</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Deputy National Director of Public Health</td>
+    </tr>
+    <tr>
+      <th>115</th>
+      <td>Myanmar</td>
+      <td>MMR</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>116</th>
+      <td>Namibia</td>
+      <td>NAM</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Ministry of Health and Social Services</td>
+    </tr>
+    <tr>
+      <th>117</th>
+      <td>Nauru</td>
+      <td>NRU</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of the Republic of Nauru</td>
+    </tr>
+    <tr>
+      <th>118</th>
+      <td>Nepal</td>
+      <td>NPL</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Government of Nepal</td>
+    </tr>
+    <tr>
+      <th>119</th>
+      <td>Netherlands</td>
+      <td>NLD</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>National Institute for Public Health and the Environment</td>
+    </tr>
+    <tr>
+      <th>120</th>
+      <td>New Zealand</td>
+      <td>NZL</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>121</th>
+      <td>Nicaragua</td>
+      <td>NIC</td>
+      <td>Oxford/AstraZeneca, Sputnik V</td>
+      <td>Ministerio de Salud de la República de Nicaragua</td>
+    </tr>
+    <tr>
+      <th>122</th>
+      <td>Niger</td>
+      <td>NER</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Government of Niger</td>
+    </tr>
+    <tr>
+      <th>123</th>
+      <td>Nigeria</td>
+      <td>NGA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Nigeria</td>
+    </tr>
+    <tr>
+      <th>124</th>
+      <td>North Macedonia</td>
+      <td>MKD</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sputnik V</td>
+      <td>Government of North Macedonia</td>
+    </tr>
+    <tr>
+      <th>125</th>
+      <td>Northern Cyprus</td>
+      <td>OWID_CYN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>Northern Ireland</td>
+      <td>OWID_NIR</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of the United Kingdom</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>Norway</td>
+      <td>NOR</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Norwegian Institute of Public Health</td>
+    </tr>
+    <tr>
+      <th>128</th>
+      <td>Oman</td>
+      <td>OMN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>129</th>
+      <td>Pakistan</td>
+      <td>PAK</td>
+      <td>CanSino, Sinopharm/Beijing, Sinovac, Sputnik V</td>
+      <td>National Command and Operation Centre</td>
+    </tr>
+    <tr>
+      <th>130</th>
+      <td>Palestine</td>
+      <td>PSE</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>131</th>
+      <td>Panama</td>
+      <td>PAN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>132</th>
+      <td>Papua New Guinea</td>
+      <td>PNG</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Papua New Guinea</td>
+    </tr>
+    <tr>
+      <th>133</th>
+      <td>Paraguay</td>
+      <td>PRY</td>
+      <td>Sputnik V</td>
+      <td>Government of Paraguay</td>
+    </tr>
+    <tr>
+      <th>134</th>
+      <td>Peru</td>
+      <td>PER</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>135</th>
+      <td>Philippines</td>
+      <td>PHL</td>
+      <td>Oxford/AstraZeneca, Sinovac</td>
+      <td>Government of the Philippines</td>
+    </tr>
+    <tr>
+      <th>136</th>
+      <td>Poland</td>
+      <td>POL</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>137</th>
+      <td>Portugal</td>
+      <td>PRT</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Directorate General for Health via Data Science for Social Good</td>
+    </tr>
+    <tr>
+      <th>138</th>
+      <td>Qatar</td>
+      <td>QAT</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Ministry of Public Health</td>
+    </tr>
+    <tr>
+      <th>139</th>
+      <td>Romania</td>
+      <td>ROU</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of Romania</td>
+    </tr>
+    <tr>
+      <th>140</th>
+      <td>Russia</td>
+      <td>RUS</td>
+      <td>EpiVacCorona, Sputnik V</td>
+      <td>Official data from local governments via gogov.ru</td>
+    </tr>
+    <tr>
+      <th>141</th>
+      <td>Rwanda</td>
+      <td>RWA</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>142</th>
+      <td>Saint Helena</td>
+      <td>SHN</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Saint Helena</td>
+    </tr>
+    <tr>
+      <th>143</th>
+      <td>Saint Kitts and Nevis</td>
+      <td>KNA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Saint Kitts and Nevis</td>
+    </tr>
+    <tr>
+      <th>144</th>
+      <td>Saint Lucia</td>
+      <td>LCA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>Saint Vincent and the Grenadines</td>
+      <td>VCT</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>146</th>
+      <td>Samoa</td>
+      <td>WSM</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>San Marino</td>
+      <td>SMR</td>
+      <td>Pfizer/BioNTech, Sputnik V</td>
+      <td>Social Security Institute</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>Sao Tome and Principe</td>
+      <td>STP</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>Saudi Arabia</td>
+      <td>SAU</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Saudi Health Council</td>
+    </tr>
+    <tr>
+      <th>150</th>
+      <td>Scotland</td>
+      <td>OWID_SCT</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of the United Kingdom</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>Senegal</td>
+      <td>SEN</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>152</th>
+      <td>Serbia</td>
+      <td>SRB</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sputnik V</td>
+      <td>Government of Serbia</td>
+    </tr>
+    <tr>
+      <th>153</th>
+      <td>Seychelles</td>
+      <td>SYC</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Extended Programme for Immunisation</td>
+    </tr>
+    <tr>
+      <th>154</th>
+      <td>Sierra Leone</td>
+      <td>SLE</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health and Sanitation</td>
+    </tr>
+    <tr>
+      <th>155</th>
+      <td>Singapore</td>
+      <td>SGP</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>156</th>
+      <td>Slovakia</td>
+      <td>SVK</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>157</th>
+      <td>Slovenia</td>
+      <td>SVN</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>National Institute of Public Health via Sledilnik</td>
+    </tr>
+    <tr>
+      <th>158</th>
+      <td>Solomon Islands</td>
+      <td>SLB</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of the Solomon Islands</td>
+    </tr>
+    <tr>
+      <th>159</th>
+      <td>Somalia</td>
+      <td>SOM</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Federal Government of Somalia</td>
+    </tr>
+    <tr>
+      <th>160</th>
+      <td>South Africa</td>
+      <td>ZAF</td>
+      <td>Johnson&amp;Johnson</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>161</th>
+      <td>South Korea</td>
+      <td>KOR</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Korea Centers for Disease Control and Prevention</td>
+    </tr>
+    <tr>
+      <th>162</th>
+      <td>South Sudan</td>
+      <td>SSD</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of South Sudan</td>
+    </tr>
+    <tr>
+      <th>163</th>
+      <td>Spain</td>
+      <td>ESP</td>
+      <td>Johnson&amp;Johnson, Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>164</th>
+      <td>Sri Lanka</td>
+      <td>LKA</td>
+      <td>Oxford/AstraZeneca, Sinopharm/Beijing</td>
+      <td>Ministry of Health's Epidemiology Unit</td>
+    </tr>
+    <tr>
+      <th>165</th>
+      <td>Sudan</td>
+      <td>SDN</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Federal Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>166</th>
+      <td>Suriname</td>
+      <td>SUR</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Suriname</td>
+    </tr>
+    <tr>
+      <th>167</th>
+      <td>Sweden</td>
+      <td>SWE</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Public Health Agency of Sweden</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>Switzerland</td>
+      <td>CHE</td>
+      <td>Moderna, Pfizer/BioNTech</td>
+      <td>Federal Office of Public Health</td>
+    </tr>
+    <tr>
+      <th>169</th>
+      <td>Syria</td>
+      <td>SYR</td>
+      <td>Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>170</th>
+      <td>Taiwan</td>
+      <td>TWN</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Taiwan Centers for Disease Control</td>
+    </tr>
+    <tr>
+      <th>171</th>
+      <td>Thailand</td>
+      <td>THA</td>
+      <td>Oxford/AstraZeneca, Sinovac</td>
+      <td>Government of Thailand</td>
+    </tr>
+    <tr>
+      <th>172</th>
+      <td>Togo</td>
+      <td>TGO</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Togo</td>
+    </tr>
+    <tr>
+      <th>173</th>
+      <td>Tonga</td>
+      <td>TON</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Tonga</td>
+    </tr>
+    <tr>
+      <th>174</th>
+      <td>Trinidad and Tobago</td>
+      <td>TTO</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>175</th>
+      <td>Tunisia</td>
+      <td>TUN</td>
+      <td>Pfizer/BioNTech, Sinovac, Sputnik V</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>176</th>
+      <td>Turkey</td>
+      <td>TUR</td>
+      <td>Pfizer/BioNTech, Sinovac</td>
+      <td>COVID-19 Vaccine Information Platform</td>
+    </tr>
+    <tr>
+      <th>177</th>
+      <td>Turks and Caicos Islands</td>
+      <td>TCA</td>
+      <td>Pfizer/BioNTech</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>178</th>
+      <td>Uganda</td>
+      <td>UGA</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>179</th>
+      <td>Ukraine</td>
+      <td>UKR</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>180</th>
+      <td>United Arab Emirates</td>
+      <td>ARE</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinopharm/Beijing, Sinopharm/Wuhan, Sputnik V</td>
+      <td>National Emergency Crisis and Disaster Management Authority</td>
+    </tr>
+    <tr>
+      <th>181</th>
+      <td>United Kingdom</td>
+      <td>GBR</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of the United Kingdom</td>
+    </tr>
+    <tr>
+      <th>182</th>
+      <td>United States</td>
+      <td>USA</td>
+      <td>Johnson&amp;Johnson, Moderna, Pfizer/BioNTech</td>
+      <td>Centers for Disease Control and Prevention</td>
+    </tr>
+    <tr>
+      <th>183</th>
+      <td>Uruguay</td>
+      <td>URY</td>
+      <td>Oxford/AstraZeneca, Pfizer/BioNTech, Sinovac</td>
+      <td>Ministry of Health</td>
+    </tr>
+    <tr>
+      <th>184</th>
+      <td>Uzbekistan</td>
+      <td>UZB</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Uzbekistan</td>
+    </tr>
+    <tr>
+      <th>185</th>
+      <td>Venezuela</td>
+      <td>VEN</td>
+      <td>Sputnik V</td>
+      <td>Government of Venezuela</td>
+    </tr>
+    <tr>
+      <th>186</th>
+      <td>Vietnam</td>
+      <td>VNM</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Vietnam</td>
+    </tr>
+    <tr>
+      <th>187</th>
+      <td>Wales</td>
+      <td>OWID_WLS</td>
+      <td>Moderna, Oxford/AstraZeneca, Pfizer/BioNTech</td>
+      <td>Government of the United Kingdom</td>
+    </tr>
+    <tr>
+      <th>188</th>
+      <td>Zambia</td>
+      <td>ZMB</td>
+      <td>Oxford/AstraZeneca</td>
+      <td>Government of Zambia</td>
+    </tr>
+    <tr>
+      <th>189</th>
+      <td>Zimbabwe</td>
+      <td>ZWE</td>
+      <td>Sinopharm/Beijing</td>
+      <td>Ministry of Health</td>
+    </tr>
+  </tbody>
+</table>
+ </div>
+<!--  <script>
+   document.getElementById('btnsend').addEventListener('click', (e) => {
+      if(document.getElementById('val').value >= 16) {
+        document.getElementById('result').style.display = 'none';
+        alert("Not enough Vaccination Data Available. Please Enter a greater day count.");
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('val').innerText = "";
+        e.preventDefault();
+      }
+      else {
+        alert("Enter a Value greater than 16");
+      }
+   });
+ </script> -->
+ <script type="text/javascript">
+   let ctx = document.getElementById('myChart').getContext('2d');
+let labels = ['AstraZeneca', 'Sputnik V', 'Sinopharm', 'Moderna','Pfizer','Johnson&Johnson'];
+let colorHex = ['#FB3640', '#EFCA08', '#43AA8B', '#253D5B','#58eb34','#eb34b1'];
+
+let myChart = new Chart(ctx, {
+  type: 'pie',
+  data: {
+    datasets: [{
+      data: [141, 29, 39, 42,92,14],
+      backgroundColor: colorHex
+    }],
+    labels: labels
+  },
+  options: {
+    responsive: true,
+    legend: {
+      position: 'bottom'
+    },
+    plugins: {
+      datalabels: {
+        color: '#fff',
+        anchor: 'end',
+        align: 'start',
+        offset: -10,
+        borderWidth: 2,
+        borderColor: '#fff',
+        borderRadius: 25,
+        backgroundColor: (context) => {
+          return context.dataset.backgroundColor;
+        },
+        font: {
+          weight: 'bold',
+          size: '10'
+        },
+        formatter: (value) => {
+          return value + ' %';
+        }
+      }
+    }
+  }
+})
+ </script>
+</body>
+</html>
